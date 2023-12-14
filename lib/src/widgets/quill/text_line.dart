@@ -28,6 +28,7 @@ import '../others/keyboard_listener.dart';
 import '../others/link.dart';
 import '../others/proxy.dart';
 import '../others/text_selection.dart';
+import '../raw_editor/raw_editor_state.dart';
 import 'quill_controller.dart';
 
 class TextLine extends StatefulWidget {
@@ -163,7 +164,7 @@ class _TextLineState extends State<TextLine> {
         );
       }
     }
-    final textSpan = _getTextSpanForWholeLine();
+    final textSpan = _getTextSpanForWholeLine(context);
     final strutStyle =
         StrutStyle.fromTextStyle(textSpan.style ?? const TextStyle());
     final textAlign = _getTextAlign();
@@ -186,10 +187,11 @@ class _TextLineState extends State<TextLine> {
     );
   }
 
-  InlineSpan _getTextSpanForWholeLine() {
+  InlineSpan _getTextSpanForWholeLine(BuildContext context) {
     final lineStyle = _getLineStyle(widget.styles);
     if (!widget.line.hasEmbed) {
-      return _buildTextSpan(widget.styles, widget.line.children, lineStyle);
+      return _buildTextSpan(
+          widget.styles, widget.line.children, lineStyle, context);
     }
 
     // The line could contain more than one Embed & more than one Text
@@ -198,8 +200,8 @@ class _TextLineState extends State<TextLine> {
     for (var child in widget.line.children) {
       if (child is Embed) {
         if (textNodes.isNotEmpty) {
-          textSpanChildren
-              .add(_buildTextSpan(widget.styles, textNodes, lineStyle));
+          textSpanChildren.add(
+              _buildTextSpan(widget.styles, textNodes, lineStyle, context));
           textNodes = LinkedList<Node>();
         }
         // Creates correct node for custom embed
@@ -228,7 +230,8 @@ class _TextLineState extends State<TextLine> {
     }
 
     if (textNodes.isNotEmpty) {
-      textSpanChildren.add(_buildTextSpan(widget.styles, textNodes, lineStyle));
+      textSpanChildren
+          .add(_buildTextSpan(widget.styles, textNodes, lineStyle, context));
     }
 
     return TextSpan(style: lineStyle, children: textSpanChildren);
@@ -252,14 +255,20 @@ class _TextLineState extends State<TextLine> {
     DefaultStyles defaultStyles,
     LinkedList<Node> nodes,
     TextStyle lineStyle,
+    BuildContext context,
   ) {
     if (nodes.isEmpty && kIsWeb) {
       nodes = LinkedList<Node>()..add(leaf.QuillText('\u{200B}'));
     }
-    final children = nodes
-        .map((node) =>
-            _getTextSpanFromNode(defaultStyles, node, widget.line.style))
-        .toList(growable: false);
+    Node? prev;
+    final children = nodes.map((node) {
+      final style = DefaultStylesBuilderWidget.of(context)
+              ?.stylesBuilder
+              .call(prev, node, defaultStyles) ??
+          defaultStyles;
+      prev = node;
+      return _getTextSpanFromNode(style, node, widget.line.style);
+    }).toList(growable: false);
 
     return TextSpan(children: children, style: lineStyle);
   }

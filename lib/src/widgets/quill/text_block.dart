@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 
+import '../../../flutter_quill.dart';
 import '../../extensions/quill_configurations_ext.dart';
 import '../../models/documents/attribute.dart';
 import '../../models/documents/nodes/block.dart';
@@ -135,15 +136,19 @@ class EditableTextBlock extends StatelessWidget {
 
   List<Widget> _buildChildren(BuildContext context,
       Map<int, int> indentLevelCounts, bool clearIndents) {
-    final defaultStyles = QuillStyles.getStyles(context, false);
+    final style0 = QuillStyles.getStyles(context, false)!;
     final count = block.children.length;
     final children = <Widget>[];
     if (clearIndents) {
       indentLevelCounts.clear();
     }
     var index = 0;
+    Line? prev;
     for (final line in Iterable.castFrom<dynamic, Line>(block.children)) {
       index++;
+      final defaultStyles = DefaultStylesBuilderWidget.of(context)
+              ?.stylesBuilder(prev, line, style0) ??
+          style0;
       final editableTextLine = EditableTextLine(
         line,
         _buildLeading(

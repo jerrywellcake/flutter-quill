@@ -953,6 +953,7 @@ class QuillRawEditorState extends EditorState
     // to the next EditableTextBlock
     var prevNodeOl = false;
     var clearIndents = false;
+    Node? prev;
 
     for (final node in doc.root.children) {
       final attrs = node.style.attributes;
@@ -964,7 +965,8 @@ class QuillRawEditorState extends EditorState
       prevNodeOl = attrs[Attribute.list.key] == Attribute.ol;
 
       if (node is Line) {
-        final editableTextLine = _getEditableTextLineFromNode(node, context);
+        final editableTextLine =
+            _getEditableTextLineFromNode(prev, node, context);
         result.add(Directionality(
             textDirection: getDirectionOfNode(node), child: editableTextLine));
       } else if (node is Block) {
@@ -1006,20 +1008,24 @@ class QuillRawEditorState extends EditorState
         _dirty = false;
         throw StateError('Unreachable.');
       }
+      prev = node;
     }
     _dirty = false;
     return result;
   }
 
   EditableTextLine _getEditableTextLineFromNode(
-      Line node, BuildContext context) {
+      Node? prev, Line node, BuildContext context) {
+    final styles = DefaultStylesBuilderWidget.of(context)
+            ?.stylesBuilder(prev, node, _styles!) ??
+        _styles!;
     final textLine = TextLine(
       line: node,
       textDirection: _textDirection,
       embedBuilder: widget.configurations.embedBuilder,
       customStyleBuilder: widget.configurations.customStyleBuilder,
       customRecognizerBuilder: widget.configurations.customRecognizerBuilder,
-      styles: _styles!,
+      styles: styles,
       readOnly: widget.configurations.readOnly,
       controller: controller,
       linkActionPicker: _linkActionPicker,
@@ -1031,7 +1037,7 @@ class QuillRawEditorState extends EditorState
         null,
         textLine,
         0,
-        _getVerticalSpacingForLine(node, _styles),
+        _getVerticalSpacingForLine(node, styles),
         _textDirection,
         controller.selection,
         widget.configurations.selectionColor,
@@ -1725,4 +1731,29 @@ class QuillRawEditorState extends EditorState
 
   @override
   bool get shareEnabled => false;
+}
+
+typedef DefaultStylesBuilder = DefaultStyles Function(
+    Node? prev, Node current, DefaultStyles style);
+
+class DefaultStylesBuilderWidget extends InheritedWidget {
+  const DefaultStylesBuilderWidget({
+    super.key,
+    required this.stylesBuilder,
+    required super.child,
+  });
+
+  final DefaultStylesBuilder stylesBuilder;
+
+  @override
+  bool updateShouldNotify(covariant InheritedWidget oldWidget) {
+    if (oldWidget is DefaultStylesBuilderWidget) {
+      return stylesBuilder == oldWidget.stylesBuilder;
+    }
+
+    return false;
+  }
+
+  static DefaultStylesBuilderWidget? of(BuildContext context) =>
+      context.dependOnInheritedWidgetOfExactType<DefaultStylesBuilderWidget>();
 }
