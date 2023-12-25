@@ -84,4 +84,7 @@ abstract class EditorState extends State<QuillRawEditor>
   bool showToolbar();
 
   void requestKeyboard();
+
+  void showCaretOnScreen(
+      {Duration duration = const Duration(milliseconds: 100)});
 }

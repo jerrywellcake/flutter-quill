@@ -1426,7 +1426,14 @@ class QuillRawEditorState extends EditorState
   // This causes controller.selection to go to offset 0
   bool _disableScrollControllerAnimateOnce = false;
 
-  void _showCaretOnScreen() {
+  @override
+  void showCaretOnScreen(
+      {Duration duration = const Duration(milliseconds: 100)}) {
+    _showCaretOnScreen(duration: duration);
+  }
+
+  void _showCaretOnScreen(
+      {Duration duration = const Duration(milliseconds: 100)}) {
     if (!widget.configurations.showCursor || _showCaretOnScreenScheduled) {
       return;
     }
@@ -1456,11 +1463,17 @@ class QuillRawEditorState extends EditorState
             _disableScrollControllerAnimateOnce = false;
             return;
           }
-          _scrollController.animateTo(
-            math.min(offset, _scrollController.position.maxScrollExtent),
-            duration: const Duration(milliseconds: 100),
-            curve: Curves.fastOutSlowIn,
-          );
+
+          if (duration == Duration.zero) {
+            _scrollController.jumpTo(
+                math.min(offset, _scrollController.position.maxScrollExtent));
+          } else {
+            _scrollController.animateTo(
+              math.min(offset, _scrollController.position.maxScrollExtent),
+              duration: duration,
+              curve: Curves.fastOutSlowIn,
+            );
+          }
         }
       }
     });
