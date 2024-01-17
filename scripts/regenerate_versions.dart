@@ -6,14 +6,14 @@ import 'package:yaml_edit/yaml_edit.dart';
 
 // You must run this script in the root folder of the repo and not inside the scripts
 
-// ignore: unused_import
 import '../version.dart';
 
 final packages = [
   './',
   './flutter_quill_extensions',
   './flutter_quill_test',
-  './quill_html_converter'
+  './quill_html_converter',
+  './quill_pdf_converter',
 ];
 
 Future<void> main(List<String> args) async {

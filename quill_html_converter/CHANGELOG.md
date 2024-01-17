@@ -2,6 +2,69 @@
 
 All notable changes to this project will be documented in this file.
 
+## 9.2.6
+* [fix selection.affinity always downstream after updateEditingValue](https://github.com/singerdmx/flutter-quill/pull/1682)
+* Bumb version of `super_clipboard`
+
+## 9.2.5
+* Bumb version of `super_clipboard`
+
+## 9.2.4
+* Use fixed version of intl
+
+## 9.2.3
+* remove unncessary column in Flutter quill video embed block
+
+## 9.2.2
+* Fix bug [#1627](https://github.com/singerdmx/flutter-quill/issues/1627)
+
+## 9.2.1
+* Fix [bug](https://github.com/singerdmx/flutter-quill/issues/1119#issuecomment-1872605246) with font size button
+* Added ro RO translations
+* 📖 Update zh, zh_CN translations
+
+## 9.2.0
+* Require minimum version `6.0.0` of `flutter_keyboard_visibility` to fix some build issues with Android Gradle Plugin 8.2.0
+* Add on image clicked in `flutter_quill_extensions` callback
+* Deprecate `globalIconSize` and `globalIconButtonFactor`, use `iconSize` and `iconButtonFactor` instead
+* Fix the `QuillToolbarSelectAlignmentButtons`
+
+## 9.1.1
+* Require `super_clipboard` minimum version `0.8.1` to fix some bug with Linux build failure
+
+## 9.1.1-dev
+* Fix bug [#1636](https://github.com/singerdmx/flutter-quill/issues/1636)
+* Fix a where you paste styled content (HTML) it always insert a new line at first even if the document is empty
+* Fix the font size button and migrate to `MenuAnchor`
+* The `defaultDisplayText` is no longer required in the font size and header dropdown buttons
+* Add pdf converter in a new package (`quill_pdf_converter`)
+
+## 9.1.0
+* Fix the simple toolbar by add properties of `IconButton` and fix some buttons
+
+## 9.1.0-dev.2
+* Fix the history buttons
+
+## 9.1.0-dev.1
+* Bug fixes in the simple toolbar buttons
+
+## 9.1.0-dev
+* **Breaking Change**: in the `QuillSimpleToolbar` Fix the `QuillIconTheme` by replacing all the properties with two properties of type `ButtonStyle`, use `IconButton.styleFrom()`
+
+## 9.0.6
+* Fix bug in QuillToolbarSelectAlignmentButtons
+
+## 9.0.5
+* You can now use most of the buttons without internal provider
+
+## 9.0.4
+* Feature: [#1611](https://github.com/singerdmx/flutter-quill/issues/1611)
+* Export missing widgets
+
+## 9.0.3
+* Flutter Quill Extensions:
+  * Fix file image support for web image emebed builder
+
 ## 9.0.2
 * Remove unused properties in the `QuillToolbarSelectHeaderStyleDropdownButton`
 * Fix the `QuillSimpleToolbar` when `useMaterial3` is false, please upgrade to the latest version of flutter for better support

@@ -1,7 +1,6 @@
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 
-import '../../../../../extensions.dart';
 import '../../../../extensions/quill_configurations_ext.dart';
 import '../../../../l10n/extensions/localizations.dart';
 import '../../../../models/documents/attribute.dart';
@@ -56,33 +55,33 @@ class QuillToolbarSelectHeaderStyleButtonsState
   }
 
   double get iconSize {
-    final baseFontSize = baseButtonExtraOptions.globalIconSize;
+    final baseFontSize = baseButtonExtraOptions?.iconSize;
     final iconSize = options.iconSize;
-    return iconSize ?? baseFontSize;
+    return iconSize ?? baseFontSize ?? kDefaultIconSize;
   }
 
   double get iconButtonFactor {
-    final baseIconFactor = baseButtonExtraOptions.globalIconButtonFactor;
+    final baseIconFactor = baseButtonExtraOptions?.iconButtonFactor;
     final iconButtonFactor = options.iconButtonFactor;
-    return iconButtonFactor ?? baseIconFactor;
+    return iconButtonFactor ?? baseIconFactor ?? kDefaultIconButtonFactor;
   }
 
   VoidCallback? get afterButtonPressed {
     return options.afterButtonPressed ??
-        baseButtonExtraOptions.afterButtonPressed;
+        baseButtonExtraOptions?.afterButtonPressed;
   }
 
   QuillIconTheme? get iconTheme {
-    return options.iconTheme ?? baseButtonExtraOptions.iconTheme;
+    return options.iconTheme ?? baseButtonExtraOptions?.iconTheme;
   }
 
-  QuillToolbarBaseButtonOptions get baseButtonExtraOptions {
-    return context.requireQuillToolbarBaseButtonOptions;
+  QuillToolbarBaseButtonOptions? get baseButtonExtraOptions {
+    return context.quillToolbarBaseButtonOptions;
   }
 
   String get tooltip {
     return options.tooltip ??
-        baseButtonExtraOptions.tooltip ??
+        baseButtonExtraOptions?.tooltip ??
         context.loc.headerStyle;
   }
 
@@ -90,8 +89,7 @@ class QuillToolbarSelectHeaderStyleButtonsState
     return options.axis ??
         context.quillSimpleToolbarConfigurations?.axis ??
         context.quillToolbarConfigurations?.axis ??
-        (throw ArgumentError(
-            'There is no default value for the Axis of the toolbar'));
+        Axis.horizontal;
   }
 
   void _sharedOnPressed(Attribute attribute) {
@@ -126,20 +124,12 @@ class QuillToolbarSelectHeaderStyleButtonsState
     );
 
     final childBuilder =
-        options.childBuilder ?? baseButtonExtraOptions.childBuilder;
+        options.childBuilder ?? baseButtonExtraOptions?.childBuilder;
 
     final children = _attrbuites.map((attribute) {
       if (childBuilder != null) {
         return childBuilder(
-          QuillToolbarSelectHeaderStyleButtonsOptions(
-            afterButtonPressed: afterButtonPressed,
-            attributes: _attrbuites,
-            axis: axis,
-            iconSize: iconSize,
-            iconButtonFactor: iconButtonFactor,
-            iconTheme: iconTheme,
-            tooltip: tooltip,
-          ),
+          options,
           QuillToolbarSelectHeaderStyleButtonsExtraOptions(
             controller: controller,
             context: context,
@@ -147,42 +137,24 @@ class QuillToolbarSelectHeaderStyleButtonsState
           ),
         );
       }
-      final theme = Theme.of(context);
+
       final isSelected = _selectedAttribute == attribute;
       return Padding(
         padding: const EdgeInsets.symmetric(horizontal: !kIsWeb ? 1.0 : 5.0),
-        child: ConstrainedBox(
-          constraints: BoxConstraints.tightFor(
-            width: iconSize * iconButtonFactor,
-            height: iconSize * iconButtonFactor,
-          ),
-          child: UtilityWidgets.maybeTooltip(
-            message: tooltip,
-            child: RawMaterialButton(
-              hoverElevation: 0,
-              highlightElevation: 0,
-              elevation: 0,
-              visualDensity: VisualDensity.compact,
-              shape: RoundedRectangleBorder(
-                  borderRadius:
-                      BorderRadius.circular(iconTheme?.borderRadius ?? 2)),
-              fillColor: isSelected
-                  ? (iconTheme?.iconSelectedFillColor ?? theme.primaryColor)
-                  : (iconTheme?.iconUnselectedFillColor ?? theme.canvasColor),
-              onPressed: () => _sharedOnPressed(attribute),
-              child: Text(
-                _valueToText[attribute] ??
-                    (throw ArgumentError.notNull(
-                      'attrbuite',
-                    )),
-                style: style.copyWith(
-                  color: isSelected
-                      ? (iconTheme?.iconSelectedColor ??
-                          theme.primaryIconTheme.color)
-                      : (iconTheme?.iconUnselectedColor ??
-                          theme.iconTheme.color),
-                ),
-              ),
+        child: QuillToolbarIconButton(
+          tooltip: tooltip,
+          iconTheme: iconTheme,
+          isSelected: isSelected,
+          onPressed: () => _sharedOnPressed(attribute),
+          icon: Text(
+            _valueToText[attribute] ??
+                (throw ArgumentError.notNull(
+                  'attrbuite',
+                )),
+            style: style.copyWith(
+              color: isSelected
+                  ? iconTheme?.iconButtonSelectedData?.color
+                  : iconTheme?.iconButtonUnselectedData?.color,
             ),
           ),
         ),

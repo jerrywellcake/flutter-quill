@@ -82,23 +82,24 @@ class _QuillToolbarSelectHeaderStyleDropdownButtonState
       Attribute.h4 => context.loc.heading4,
       Attribute.h5 => context.loc.heading5,
       Attribute.h6 => context.loc.heading6,
-      Attribute.header => context.loc.normal,
+      Attribute.header =>
+        widget.options.defaultDisplayText ?? context.loc.normal,
       Attribute<dynamic>() => throw ArgumentError(),
     };
     return label;
   }
 
   double get iconSize {
-    final baseFontSize = context.quillToolbarBaseButtonOptions?.globalIconSize;
+    final baseFontSize = context.quillToolbarBaseButtonOptions?.iconSize;
     final iconSize = widget.options.iconSize;
     return iconSize ?? baseFontSize ?? kDefaultIconSize;
   }
 
   double get iconButtonFactor {
     final baseIconFactor =
-        context.quillToolbarBaseButtonOptions?.globalIconButtonFactor;
+        context.quillToolbarBaseButtonOptions?.iconButtonFactor;
     final iconButtonFactor = widget.options.iconButtonFactor;
-    return iconButtonFactor ?? baseIconFactor ?? kIconButtonFactor;
+    return iconButtonFactor ?? baseIconFactor ?? kDefaultIconButtonFactor;
   }
 
   QuillIconTheme? get iconTheme {
@@ -112,20 +113,23 @@ class _QuillToolbarSelectHeaderStyleDropdownButtonState
           Attribute.h1,
           Attribute.h2,
           Attribute.h3,
-          Attribute.h4,
-          Attribute.h5,
-          Attribute.h6,
           Attribute.header,
         ];
   }
 
-  QuillToolbarBaseButtonOptions get baseButtonExtraOptions {
-    return context.requireQuillToolbarBaseButtonOptions;
+  String get tooltip {
+    return widget.options.tooltip ??
+        context.quillToolbarBaseButtonOptions?.tooltip ??
+        context.loc.headerStyle;
+  }
+
+  QuillToolbarBaseButtonOptions? get baseButtonExtraOptions {
+    return context.quillToolbarBaseButtonOptions;
   }
 
   VoidCallback? get afterButtonPressed {
     return widget.options.afterButtonPressed ??
-        baseButtonExtraOptions.afterButtonPressed;
+        baseButtonExtraOptions?.afterButtonPressed;
   }
 
   void _onPressed(Attribute<int?> e) {
@@ -135,17 +139,12 @@ class _QuillToolbarSelectHeaderStyleDropdownButtonState
 
   @override
   Widget build(BuildContext context) {
-    final baseButtonConfigurations =
-        context.requireQuillToolbarBaseButtonOptions;
+    final baseButtonConfigurations = context.quillToolbarBaseButtonOptions;
     final childBuilder =
-        widget.options.childBuilder ?? baseButtonConfigurations.childBuilder;
+        widget.options.childBuilder ?? baseButtonConfigurations?.childBuilder;
     if (childBuilder != null) {
       return childBuilder(
-        widget.options.copyWith(
-          iconSize: iconSize,
-          iconTheme: iconTheme,
-          afterButtonPressed: afterButtonPressed,
-        ),
+        widget.options,
         QuillToolbarSelectHeaderStyleDropdownButtonExtraOptions(
           currentValue: _selectedItem,
           context: context,
@@ -174,6 +173,7 @@ class _QuillToolbarSelectHeaderStyleDropdownButtonState
           final isMaterial3 = Theme.of(context).useMaterial3;
           final child = Row(
             mainAxisSize: MainAxisSize.min,
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
                 _label(_selectedItem),
@@ -194,9 +194,12 @@ class _QuillToolbarSelectHeaderStyleDropdownButtonState
               child: child,
             );
           }
-          return IconButton(
+          return QuillToolbarIconButton(
             onPressed: _onDropdownButtonPressed,
             icon: child,
+            isSelected: false,
+            iconTheme: iconTheme,
+            tooltip: tooltip,
           );
         },
       ),
@@ -206,8 +209,9 @@ class _QuillToolbarSelectHeaderStyleDropdownButtonState
   void _onDropdownButtonPressed() {
     if (_menuController.isOpen) {
       _menuController.close();
-      return;
+    } else {
+      _menuController.open();
     }
-    _menuController.open();
+    afterButtonPressed?.call();
   }
 }

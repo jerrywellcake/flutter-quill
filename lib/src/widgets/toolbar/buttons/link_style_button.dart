@@ -63,38 +63,38 @@ class QuillToolbarLinkStyleButtonState
   }
 
   double get iconSize {
-    final baseFontSize = baseButtonExtraOptions.globalIconSize;
+    final baseFontSize = baseButtonExtraOptions?.iconSize;
     final iconSize = options.iconSize;
-    return iconSize ?? baseFontSize;
+    return iconSize ?? baseFontSize ?? kDefaultIconSize;
   }
 
   double get iconButtonFactor {
-    final baseIconFactor = baseButtonExtraOptions.globalIconButtonFactor;
+    final baseIconFactor = baseButtonExtraOptions?.iconButtonFactor;
     final iconButtonFactor = options.iconButtonFactor;
-    return iconButtonFactor ?? baseIconFactor;
+    return iconButtonFactor ?? baseIconFactor ?? kDefaultIconButtonFactor;
   }
 
   VoidCallback? get afterButtonPressed {
     return options.afterButtonPressed ??
-        baseButtonExtraOptions.afterButtonPressed;
+        baseButtonExtraOptions?.afterButtonPressed;
   }
 
   QuillIconTheme? get iconTheme {
-    return options.iconTheme ?? baseButtonExtraOptions.iconTheme;
+    return options.iconTheme ?? baseButtonExtraOptions?.iconTheme;
   }
 
-  QuillToolbarBaseButtonOptions get baseButtonExtraOptions {
-    return context.requireQuillToolbarBaseButtonOptions;
+  QuillToolbarBaseButtonOptions? get baseButtonExtraOptions {
+    return context.quillToolbarBaseButtonOptions;
   }
 
   String get tooltip {
     return options.tooltip ??
-        baseButtonExtraOptions.tooltip ??
+        baseButtonExtraOptions?.tooltip ??
         context.loc.insertURL;
   }
 
   IconData get iconData {
-    return options.iconData ?? baseButtonExtraOptions.iconData ?? Icons.link;
+    return options.iconData ?? baseButtonExtraOptions?.iconData ?? Icons.link;
   }
 
   Color get dialogBarrierColor {
@@ -112,21 +112,10 @@ class QuillToolbarLinkStyleButtonState
     final isToggled = _getLinkAttributeValue() != null;
 
     final childBuilder =
-        options.childBuilder ?? baseButtonExtraOptions.childBuilder;
+        options.childBuilder ?? baseButtonExtraOptions?.childBuilder;
     if (childBuilder != null) {
       return childBuilder(
-        QuillToolbarLinkStyleButtonOptions(
-          afterButtonPressed: afterButtonPressed,
-          dialogBarrierColor: dialogBarrierColor,
-          dialogTheme: options.dialogTheme,
-          iconData: iconData,
-          iconSize: iconSize,
-          iconButtonFactor: iconButtonFactor,
-          tooltip: tooltip,
-          linkDialogAction: options.linkDialogAction,
-          linkRegExp: linkRegExp,
-          iconTheme: iconTheme,
-        ),
+        options,
         QuillToolbarLinkStyleButtonExtraOptions(
           context: context,
           controller: controller,
@@ -137,19 +126,19 @@ class QuillToolbarLinkStyleButtonState
         ),
       );
     }
-    final theme = Theme.of(context);
     return QuillToolbarIconButton(
       tooltip: tooltip,
       icon: Icon(
         iconData,
         size: iconSize * iconButtonFactor,
-        color: isToggled
-            ? (iconTheme?.iconSelectedColor ?? theme.primaryIconTheme.color)
-            : (iconTheme?.iconUnselectedColor ?? theme.iconTheme.color),
+        // color: isToggled
+        //     ? iconTheme?.iconSelectedFillColor
+        //     : iconTheme?.iconUnselectedFillColor,
       ),
-      isFilled: isToggled,
+      isSelected: isToggled,
       onPressed: () => _openLinkDialog(context),
       afterPressed: afterButtonPressed,
+      iconTheme: iconTheme,
     );
   }
 

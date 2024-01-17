@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../../extensions/quill_configurations_ext.dart';
 import '../../../l10n/extensions/localizations.dart';
-import '../../../models/config/toolbar/buttons/indent_configurations.dart';
+import '../../../models/config/toolbar/simple_toolbar_configurations.dart';
 import '../../../models/themes/quill_icon_theme.dart';
 import '../../quill/quill_controller.dart';
 import '../base_toolbar.dart'
@@ -35,33 +35,33 @@ class QuillToolbarIndentButtonState extends State<QuillToolbarIndentButton> {
   }
 
   double get iconSize {
-    final baseFontSize = baseButtonExtraOptions.globalIconSize;
+    final baseFontSize = baseButtonExtraOptions?.iconSize;
     final iconSize = options.iconSize;
-    return iconSize ?? baseFontSize;
+    return iconSize ?? baseFontSize ?? kDefaultIconSize;
   }
 
   double get iconButtonFactor {
-    final baseIconFactor = baseButtonExtraOptions.globalIconButtonFactor;
+    final baseIconFactor = baseButtonExtraOptions?.iconButtonFactor;
     final iconButtonFactor = options.iconButtonFactor;
-    return iconButtonFactor ?? baseIconFactor;
+    return iconButtonFactor ?? baseIconFactor ?? kDefaultIconButtonFactor;
   }
 
   VoidCallback? get afterButtonPressed {
     return options.afterButtonPressed ??
-        baseButtonExtraOptions.afterButtonPressed;
+        baseButtonExtraOptions?.afterButtonPressed;
   }
 
   QuillIconTheme? get iconTheme {
-    return options.iconTheme ?? baseButtonExtraOptions.iconTheme;
+    return options.iconTheme ?? baseButtonExtraOptions?.iconTheme;
   }
 
-  QuillToolbarBaseButtonOptions get baseButtonExtraOptions {
-    return context.requireQuillToolbarBaseButtonOptions;
+  QuillToolbarBaseButtonOptions? get baseButtonExtraOptions {
+    return context.quillToolbarBaseButtonOptions;
   }
 
   IconData get iconData {
     return options.iconData ??
-        baseButtonExtraOptions.iconData ??
+        baseButtonExtraOptions?.iconData ??
         (widget.isIncrease
             ? Icons.format_indent_increase
             : Icons.format_indent_decrease);
@@ -69,7 +69,7 @@ class QuillToolbarIndentButtonState extends State<QuillToolbarIndentButton> {
 
   String get tooltip {
     return options.tooltip ??
-        baseButtonExtraOptions.tooltip ??
+        baseButtonExtraOptions?.tooltip ??
         (widget.isIncrease
             ? context.loc.increaseIndent
             : context.loc.decreaseIndent);
@@ -82,18 +82,11 @@ class QuillToolbarIndentButtonState extends State<QuillToolbarIndentButton> {
   @override
   Widget build(BuildContext context) {
     final childBuilder =
-        options.childBuilder ?? baseButtonExtraOptions.childBuilder;
+        options.childBuilder ?? baseButtonExtraOptions?.childBuilder;
 
     if (childBuilder != null) {
       return childBuilder(
-        QuillToolbarIndentButtonOptions(
-          afterButtonPressed: afterButtonPressed,
-          iconData: iconData,
-          iconSize: iconSize,
-          iconButtonFactor: iconButtonFactor,
-          iconTheme: iconTheme,
-          tooltip: tooltip,
-        ),
+        options,
         QuillToolbarIndentButtonExtraOptions(
           controller: controller,
           context: context,
@@ -104,15 +97,19 @@ class QuillToolbarIndentButtonState extends State<QuillToolbarIndentButton> {
         ),
       );
     }
-    final theme = Theme.of(context);
 
-    final iconColor = iconTheme?.iconUnselectedColor ?? theme.iconTheme.color;
+    // final iconColor = iconTheme?.iconUnselectedFillColor;
     return QuillToolbarIconButton(
       tooltip: tooltip,
-      icon: Icon(iconData, size: iconSize * iconButtonFactor, color: iconColor),
-      isFilled: false,
+      icon: Icon(
+        iconData,
+        size: iconSize * iconButtonFactor,
+        // color: iconColor,
+      ),
+      isSelected: false,
       onPressed: _sharedOnPressed,
       afterPressed: afterButtonPressed,
+      iconTheme: iconTheme,
     );
   }
 }

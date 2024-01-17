@@ -1,10 +1,8 @@
 name: Build the example
 
 on:
-  push:
-    paths:
-      - 'pubspec.yaml'
-      - 'flutter_quill_extensions/pubspec.yaml'
+  pull_request:
+    branches: [master, dev]
 
 jobs:
   build_linux:

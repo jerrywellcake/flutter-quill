@@ -18,16 +18,16 @@ class QuillToolbarColorButtonExtraOptions
 
   final Color? iconColor;
   final Color? iconColorBackground;
-  final Color fillColor;
-  final Color fillColorBackground;
+  final Color? fillColor;
+  final Color? fillColorBackground;
 }
 
 class QuillToolbarColorButtonOptions extends QuillToolbarBaseButtonOptions<
     QuillToolbarColorButtonOptions, QuillToolbarColorButtonExtraOptions> {
   const QuillToolbarColorButtonOptions({
     this.dialogBarrierColor,
-    this.iconSize,
-    this.iconButtonFactor,
+    super.iconSize,
+    super.iconButtonFactor,
     super.iconData,
     super.afterButtonPressed,
     super.childBuilder,
@@ -35,9 +35,6 @@ class QuillToolbarColorButtonOptions extends QuillToolbarBaseButtonOptions<
     super.tooltip,
     this.customOnPressedCallback,
   });
-
-  final double? iconSize;
-  final double? iconButtonFactor;
 
   /// By default will use the default `dialogBarrierColor` from
   /// [QuillSharedConfigurations]

@@ -32,10 +32,10 @@ export 'simple_toolbar_button_options.dart';
 const double kDefaultIconSize = 15;
 
 /// The default size for the toolbar (width, height)
-const double defaultToolbarSize = kDefaultIconSize * 2;
+const double kDefaultToolbarSize = kDefaultIconSize * 2;
 
 /// The factor of how much larger the button is in relation to the icon.
-const double kIconButtonFactor = 1.6;
+const double kDefaultIconButtonFactor = 1.6;
 
 /// The horizontal margin between the contents of each toolbar section.
 const double kToolbarSectionSpacing = 4;
@@ -52,14 +52,14 @@ enum LinkStyleType {
 }
 
 enum HeaderStyleType {
-  /// Defines the original [QuillToolbarSelectHeaderStyleButtons].
+  /// Defines the original [QuillToolbarSelectHeaderStyleDropdownButton].
   original,
 
-  /// Defines the alternative [QuillToolbarSelectHeaderStyleDropdownButton].
-  dropdown;
+  /// Defines the alternative [QuillToolbarSelectHeaderStyleButtons].
+  buttons;
 
   bool get isOriginal => this == HeaderStyleType.original;
-  bool get isDropdown => this == HeaderStyleType.dropdown;
+  bool get isButtons => this == HeaderStyleType.buttons;
 }
 
 /// The configurations for the toolbar widget of flutter quill
@@ -142,7 +142,7 @@ class QuillSimpleToolbarConfigurations extends QuillSharedToolbarProperties {
     if (alternativeToolbarSize != null) {
       return alternativeToolbarSize;
     }
-    return buttonOptions.base.globalIconSize * 2;
+    return (buttonOptions.base.iconSize ?? kDefaultIconSize) * 2;
   }
 
   final Map<String, String>? fontFamilyValues;
