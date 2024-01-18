@@ -217,7 +217,18 @@ class EditorTextSelectionOverlay {
     assert(toolbar == null);
     if (contextMenuBuilder == null) return;
     toolbar = OverlayEntry(builder: (context) {
-      return contextMenuBuilder!(context);
+      // to prevent from throws selection layout exception while hot reload
+      // in development
+      if (kDebugMode) {
+        try {
+          return contextMenuBuilder!(context);
+        } catch (_) {
+          // skip for the exception for hot reload in debug mode
+          return SizedBox();
+        }
+      } else {
+        return contextMenuBuilder!(context);
+      }
     });
     Overlay.of(context, rootOverlay: true, debugRequiredFor: debugRequiredFor)
         .insert(toolbar!);

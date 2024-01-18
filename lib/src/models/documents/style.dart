@@ -50,6 +50,11 @@ class Style {
   bool get isIgnored =>
       isNotEmpty && values.every((item) => item.scope == AttributeScope.ignore);
 
+  bool get isAllValidAttributes =>
+      isNotEmpty &&
+      values.every(
+          (item) => item.isInline || _allowedItemKeys.contains(item.key));
+
   Attribute get single => _attributes.values.single;
 
   bool containsKey(String key) => _attributes.containsKey(key);
@@ -130,4 +135,11 @@ class Style {
 
   @override
   String toString() => "{${_attributes.values.join(', ')}}";
+
+  static final _allowedItemKeys = <String>{};
+  static void setAllowedItemKeys(Set<String> keys) {
+    _allowedItemKeys
+      ..clear()
+      ..addAll(keys);
+  }
 }
