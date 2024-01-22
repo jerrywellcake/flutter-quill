@@ -1401,11 +1401,23 @@ class QuillRawEditorState extends EditorState
   }
 
   void _handleFocusChanged() {
-    if (dirty) {
-      SchedulerBinding.instance
-          .addPostFrameCallback((_) => _handleFocusChanged());
-      return;
-    }
+    // this code delay is introduced by https://github.com/singerdmx/flutter-quill/pull/1256/files
+    // this looks wrong because we shouldn't delay the focus change.
+    // instead, we should find why the focus change event is fired after the state
+    // is marked as dirty.
+    //
+    // since the delay will cause keybaord show/hide call to be also delayed
+    // whose the focus hand off between editors will lose keeping the keyboard shown
+    // up in the continue time frame.
+    //
+    // we are not really sure if it's fine to remove those code, we i will just comment it.
+    // and wait to see if we see the exception.
+    //
+    // if (dirty) {
+    //   SchedulerBinding.instance
+    //       .addPostFrameCallback((_) => _handleFocusChanged());
+    //   return;
+    // }
     openOrCloseConnection();
     _cursorCont.startOrStopCursorTimerIfNeeded(_hasFocus, controller.selection);
     _updateOrDisposeSelectionOverlayIfNeeded();
