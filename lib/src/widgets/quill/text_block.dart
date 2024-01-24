@@ -145,7 +145,7 @@ class EditableTextBlock extends StatelessWidget {
       indentLevelCounts.clear();
     }
     var index = 0;
-    Line? prev;
+    Node? prev = block.previous;
     for (final line in Iterable.castFrom<dynamic, Line>(block.children)) {
       index++;
       final defaultStyles = DefaultStylesBuilderWidget.of(context)
@@ -173,7 +173,7 @@ class EditableTextBlock extends StatelessWidget {
           customLinkPrefixes: customLinkPrefixes,
         ),
         _getIndentWidth(context, count),
-        _getSpacingForLine(line, index, count, defaultStyles),
+        _getSpacingForLine(prev, line, index, count, defaultStyles),
         textDirection,
         textSelection,
         color,
@@ -189,6 +189,7 @@ class EditableTextBlock extends StatelessWidget {
           child: editableTextLine,
         ),
       );
+      prev = line;
     }
     return children.toList(growable: false);
   }
@@ -336,6 +337,7 @@ class EditableTextBlock extends StatelessWidget {
   }
 
   VerticalSpacing _getSpacingForLine(
+    Node? prev,
     Line node,
     int index,
     int count,
@@ -394,10 +396,16 @@ class EditableTextBlock extends StatelessWidget {
       bottom = lineSpacing.bottom;
     }
 
-    if (index == 1) {
+    // not sure why quill editor have this line.
+    // we shouldn't remove the top spacing for first element
+    // because there are many blocks between each other and
+    // the first one should be the really first one for an whole document.
+    if (prev == null && index == 1) {
       top = 0.0;
     }
 
+    // since we are not sure what it aim to and we don't have issue here
+    // we don't do more fix on this compared to index == 1
     if (index == count) {
       bottom = 0.0;
     }
