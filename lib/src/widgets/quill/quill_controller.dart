@@ -245,14 +245,21 @@ class QuillController extends ChangeNotifier {
   }
 
   void _handleHistoryChange(int? len) {
+    // move cursor according to the length inserted or deleted from redo or undo
+    // operation. len is the length inserted or deleted.
     if (len! != 0) {
       // if (this.selection.extentOffset >= document.length) {
       // // cursor exceeds the length of document, position it in the end
       // updateSelection(
       // TextSelection.collapsed(offset: document.length), ChangeSource.LOCAL);
       updateSelection(
-          TextSelection.collapsed(offset: selection.baseOffset + len),
-          ChangeSource.local);
+        (selection.baseOffset + len) > 0
+            ? TextSelection.collapsed(
+                offset: selection.baseOffset + len,
+              )
+            : TextSelection.collapsed(offset: document.length),
+        ChangeSource.local,
+      );
     } else {
       // no need to move cursor
       notifyListeners();

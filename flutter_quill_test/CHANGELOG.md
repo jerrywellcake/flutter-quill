@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file.
 
+## 9.2.10
+* Update example screenshots
+* Refactor `Container` to `QuillContainer` with backward compatibility
+* A workaround fix in history feature
+
+## 9.2.9
+* Refactor the type of `Delta().toJson()` to be more clear type
+
+## 9.2.8
+* feat: Export Container node as QuillContainer
+* fix web cursor position / height (don't use iOS logic)
+* Added Swedish translation
+
 ## 9.2.6
 * [fix selection.affinity always downstream after updateEditingValue](https://github.com/singerdmx/flutter-quill/pull/1682)
 * Bumb version of `super_clipboard`
