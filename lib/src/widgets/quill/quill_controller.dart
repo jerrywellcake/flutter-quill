@@ -103,6 +103,13 @@ class QuillController extends ChangeNotifier {
 
   /// Tells whether to keep or reset the [toggledStyle]
   /// when user adds a new line.
+  ///
+  /// comment by jerry
+  /// this is not acted for new line actually.
+  /// because this flag is only used in selection change,
+  /// which may caused not only as an action making a new line.
+  /// TODO: make a lifecycle to represent making a new line and apply
+  /// this flag.
   final bool keepStyleOnNewLine;
 
   /// Currently selected text within the [document].
@@ -122,6 +129,10 @@ class QuillController extends ChangeNotifier {
   /// Store any styles attribute that got toggled by the tap of a button
   /// and that has not been applied yet.
   /// It gets reset after each format action within the [document].
+  ///
+  /// comment by Jerry.
+  /// this is used to keep the style that is not apply to the selection range.
+  /// e.g. move cursor to one place with 0 selection length
   Style toggledStyle = const Style();
 
   bool ignoreFocusOnTextChange = false;
@@ -145,10 +156,18 @@ class QuillController extends ChangeNotifier {
 
   /// Only attributes applied to all characters within this range are
   /// included in the result.
-  Style getSelectionStyle() {
-    return document
-        .collectStyle(selection.start, selection.end - selection.start)
-        .mergeAll(toggledStyle);
+  ///
+  /// comment by jerry.
+  /// the cases will [includToggledStyle] is that
+  /// when we do any 'editing' actions, we should extend the current styles.
+  /// for pure selection changes, we should reset [toggledStyle].
+  Style getSelectionStyle({bool includToggledStyle = true}) {
+    var style =
+        document.collectStyle(selection.start, selection.end - selection.start);
+
+    if (includToggledStyle) style = style.mergeAll(toggledStyle);
+
+    return style;
   }
 
   // Increases or decreases the indent of the current selection by 1.
@@ -325,7 +344,8 @@ class QuillController extends ChangeNotifier {
 
     if (textSelection != null) {
       if (delta == null || delta.isEmpty) {
-        _updateSelection(textSelection, ChangeSource.local);
+        _updateSelection(textSelection, ChangeSource.local,
+            keepToggledStyle: true);
       } else {
         final user = Delta()
           ..retain(index)
@@ -338,6 +358,7 @@ class QuillController extends ChangeNotifier {
             extentOffset: textSelection.extentOffset + positionDelta,
           ),
           ChangeSource.local,
+          keepToggledStyle: true,
         );
       }
     }
@@ -387,7 +408,8 @@ class QuillController extends ChangeNotifier {
         baseOffset: change.transformPosition(selection.baseOffset),
         extentOffset: change.transformPosition(selection.extentOffset));
     if (selection != adjustedSelection) {
-      _updateSelection(adjustedSelection, ChangeSource.local);
+      _updateSelection(adjustedSelection, ChangeSource.local,
+          keepToggledStyle: true);
     }
     if (shouldNotifyListeners) {
       notifyListeners();
@@ -425,8 +447,9 @@ class QuillController extends ChangeNotifier {
     );
   }
 
-  void updateSelection(TextSelection textSelection, ChangeSource source) {
-    _updateSelection(textSelection, source);
+  void updateSelection(TextSelection textSelection, ChangeSource source,
+      {bool keepToggledStyle = false}) {
+    _updateSelection(textSelection, source, keepToggledStyle: keepToggledStyle);
     notifyListeners();
   }
 
@@ -443,7 +466,7 @@ class QuillController extends ChangeNotifier {
       ),
     );
     if (selection != textSelection) {
-      _updateSelection(textSelection, source);
+      _updateSelection(textSelection, source, keepToggledStyle: true);
     }
 
     notifyListeners();
@@ -477,14 +500,15 @@ class QuillController extends ChangeNotifier {
     super.dispose();
   }
 
-  void _updateSelection(TextSelection textSelection, ChangeSource source) {
+  void _updateSelection(TextSelection textSelection, ChangeSource source,
+      {required bool keepToggledStyle}) {
     _selection = textSelection;
     final end = document.length - 1;
     _selection = selection.copyWith(
         baseOffset: math.min(selection.baseOffset, end),
         extentOffset: math.min(selection.extentOffset, end));
     if (keepStyleOnNewLine) {
-      final style = getSelectionStyle();
+      final style = getSelectionStyle(includToggledStyle: keepToggledStyle);
       final ignoredStyles = style.attributes.values.where(
         (s) => !s.isInline || s.key == Attribute.link.key,
       );
