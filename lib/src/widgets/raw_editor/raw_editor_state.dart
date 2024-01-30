@@ -1004,7 +1004,7 @@ class QuillRawEditorState extends EditorState
           controller: controller,
           textDirection: getDirectionOfNode(node),
           scrollBottomInset: widget.configurations.scrollBottomInset,
-          verticalSpacing: _getVerticalSpacingForBlock(node, _styles),
+          verticalSpacing: _getVerticalSpacingForBlock(prev, node, _styles),
           textSelection: controller.selection,
           color: widget.configurations.selectionColor,
           styles: _styles,
@@ -1045,16 +1045,13 @@ class QuillRawEditorState extends EditorState
 
   EditableTextLine _getEditableTextLineFromNode(
       Node? prev, Line node, BuildContext context) {
-    final styles = DefaultStylesBuilderWidget.of(context)
-            ?.stylesBuilder(prev, node, _styles!) ??
-        _styles!;
     final textLine = TextLine(
       line: node,
       textDirection: _textDirection,
       embedBuilder: widget.configurations.embedBuilder,
       customStyleBuilder: widget.configurations.customStyleBuilder,
       customRecognizerBuilder: widget.configurations.customRecognizerBuilder,
-      styles: styles,
+      styles: _styles!,
       readOnly: widget.configurations.readOnly,
       controller: controller,
       linkActionPicker: _linkActionPicker,
@@ -1066,7 +1063,11 @@ class QuillRawEditorState extends EditorState
         null,
         textLine,
         0,
-        _getVerticalSpacingForLine(node, styles),
+        _getVerticalSpacingForLine(
+            node,
+            DefaultStylesBuilderWidget.of(context)
+                    ?.stylesBuilder(prev, node, _styles!) ??
+                _styles!),
         _textDirection,
         controller.selection,
         widget.configurations.selectionColor,
@@ -1111,18 +1112,36 @@ class QuillRawEditorState extends EditorState
   }
 
   VerticalSpacing _getVerticalSpacingForBlock(
-      Block node, DefaultStyles? defaultStyles) {
+      Node? prev, Block node, DefaultStyles? defaultStyles) {
     final attrs = node.style.attributes;
+
+    VerticalSpacing handle(VerticalSpacing defaultFallback) {
+      return DefaultStylesBuilderWidget.of(context)
+              ?.stylesBuilder(prev, node, defaultStyles!)
+              .align
+              ?.verticalSpacing ??
+          defaultFallback;
+    }
+
     if (attrs.containsKey(Attribute.blockQuote.key)) {
+      assert(false, 'should handle it with [handle]');
       return defaultStyles!.quote!.verticalSpacing;
     } else if (attrs.containsKey(Attribute.codeBlock.key)) {
+      assert(false, 'should handle it with [handle]');
       return defaultStyles!.code!.verticalSpacing;
     } else if (attrs.containsKey(Attribute.indent.key)) {
-      return defaultStyles!.indent!.verticalSpacing;
+      return handle(defaultStyles!.indent!.verticalSpacing);
     } else if (attrs.containsKey(Attribute.list.key)) {
-      return defaultStyles!.lists!.verticalSpacing;
-    } else if (attrs.containsKey(Attribute.align.key)) {
-      return defaultStyles!.align!.verticalSpacing;
+      return handle(defaultStyles!.lists!.verticalSpacing);
+      //
+      // comment by jerry
+      // align block shouldn't affect the vertical spacing
+      // it doesn't make sense.
+      // see also for the same logic in [_getSpacingForLine]
+      // in [EditableTextBlock]
+      //
+      // } else if (attrs.containsKey(Attribute.align.key)) {
+      //   return handle(defaultStyles!.align!.verticalSpacing);
     }
     return const VerticalSpacing(0, 0);
   }

@@ -145,12 +145,9 @@ class EditableTextBlock extends StatelessWidget {
       indentLevelCounts.clear();
     }
     var index = 0;
-    Node? prev = block.previous;
+    var prev = block.previous;
     for (final line in Iterable.castFrom<dynamic, Line>(block.children)) {
       index++;
-      final defaultStyles = DefaultStylesBuilderWidget.of(context)
-              ?.stylesBuilder(prev, line, style0) ??
-          style0;
       final editableTextLine = EditableTextLine(
         line,
         _buildLeading(
@@ -173,7 +170,14 @@ class EditableTextBlock extends StatelessWidget {
           customLinkPrefixes: customLinkPrefixes,
         ),
         _getIndentWidth(context, count),
-        _getSpacingForLine(prev, line, index, count, defaultStyles),
+        _getSpacingForLine(
+            prev,
+            line,
+            index,
+            count,
+            DefaultStylesBuilderWidget.of(context)
+                    ?.stylesBuilder(prev, line, style0) ??
+                style0),
         textDirection,
         textSelection,
         color,
@@ -345,7 +349,11 @@ class EditableTextBlock extends StatelessWidget {
   ) {
     var top = 0.0, bottom = 0.0;
 
-    final attrs = block.style.attributes;
+    // comment by jerry
+    // make the vertical spacing should depends on node itself.
+    // since it affects the the line itself, not block.
+    // final attrs = block.style.attributes;
+    final attrs = node.style.attributes;
     if (attrs.containsKey(Attribute.header.key)) {
       final level = attrs[Attribute.header.key]!.value;
       switch (level) {
@@ -386,8 +394,15 @@ class EditableTextBlock extends StatelessWidget {
         lineSpacing = defaultStyles!.lists!.lineSpacing;
       } else if (attrs.containsKey(Attribute.codeBlock.key)) {
         lineSpacing = defaultStyles!.code!.lineSpacing;
-      } else if (attrs.containsKey(Attribute.align.key)) {
-        lineSpacing = defaultStyles!.align!.lineSpacing;
+        //
+        // comment by jerry
+        // align block shouldn't affect the vertical spacing
+        // it doesn't make sense.
+        // see also for the same logic in [_getVerticalSpacingForBlock]
+        // in [QuillRawEditorState]
+        //
+        // } else if (attrs.containsKey(Attribute.align.key)) {
+        //   lineSpacing = defaultStyles!.align!.lineSpacing;
       } else {
         // use paragraph linespacing as a default
         lineSpacing = defaultStyles!.paragraph!.lineSpacing;

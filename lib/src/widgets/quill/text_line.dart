@@ -28,7 +28,6 @@ import '../others/keyboard_listener.dart';
 import '../others/link.dart';
 import '../others/proxy.dart';
 import '../others/text_selection.dart';
-import '../raw_editor/raw_editor_state.dart';
 import 'quill_controller.dart';
 
 class TextLine extends StatefulWidget {
@@ -260,14 +259,8 @@ class _TextLineState extends State<TextLine> {
     if (nodes.isEmpty && kIsWeb) {
       nodes = LinkedList<Node>()..add(leaf.QuillText('\u{200B}'));
     }
-    Node? prev;
     final children = nodes.map((node) {
-      final style = DefaultStylesBuilderWidget.of(context)
-              ?.stylesBuilder
-              .call(prev, node, defaultStyles) ??
-          defaultStyles;
-      prev = node;
-      return _getTextSpanFromNode(style, node, widget.line.style);
+      return _getTextSpanFromNode(defaultStyles, node, widget.line.style);
     }).toList(growable: false);
 
     return TextSpan(children: children, style: lineStyle);
