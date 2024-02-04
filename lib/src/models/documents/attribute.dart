@@ -1,6 +1,7 @@
 import 'dart:collection';
 
 import 'package:equatable/equatable.dart';
+import 'package:flutter/rendering.dart';
 import 'package:meta/meta.dart' show immutable;
 import 'package:quiver/core.dart';
 
@@ -340,6 +341,32 @@ class HeaderAttribute extends Attribute<int?> {
 class IndentAttribute extends Attribute<int?> {
   const IndentAttribute({int? level})
       : super('indent', AttributeScope.block, level);
+}
+
+typedef CustomStyleConverter<T> = TextStyle Function(T value);
+
+class CustomStyleValue<T> {
+  CustomStyleValue({required this.styleConverter, required this.value});
+
+  final CustomStyleConverter<T> styleConverter;
+  final T value;
+
+  CustomStyleValue copyWith(T value) {
+    return CustomStyleValue<T>(styleConverter: styleConverter, value: value);
+  }
+
+  TextStyle getStyle() => styleConverter(value);
+}
+
+class CustomStyleAttribute<T> extends Attribute<CustomStyleValue<T>?> {
+  CustomStyleAttribute({
+    required String key,
+    required CustomStyleValue<T>? value,
+    AttributeScope scope = AttributeScope.block,
+  }) : super(key, scope, value) {
+    customKeys.add(key);
+  }
+  static final customKeys = <String>{};
 }
 
 class AlignAttribute extends Attribute<String?> {

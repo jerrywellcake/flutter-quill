@@ -384,6 +384,9 @@ class _TextLineState extends State<TextLine> {
       }
     }
 
+    res = _mergeCustomStyle(nodeStyle, res);
+    res = _mergeCustomStyle(lineStyle, res);
+
     if (nodeStyle.containsKey(Attribute.inlineCode.key)) {
       res = _merge(res, defaultStyles.inlineCode!.styleFor(lineStyle));
     }
@@ -432,6 +435,20 @@ class _TextLineState extends State<TextLine> {
 
     res = _applyCustomAttributes(res, textNode.style.attributes);
     return res;
+  }
+
+  TextStyle _mergeCustomStyle(Style style, TextStyle textStyle) {
+    final lineCustomKeySet =
+        style.keys.where(CustomStyleAttribute.customKeys.contains);
+    if (lineCustomKeySet.isNotEmpty) {
+      for (final key in lineCustomKeySet) {
+        final customStyle = style.attributes[key]?.value?.getStyle();
+        if (customStyle != null) {
+          textStyle = textStyle.merge(customStyle);
+        }
+      }
+    }
+    return textStyle;
   }
 
   GestureRecognizer? _getRecognizer(Node segment, bool isLink) {
