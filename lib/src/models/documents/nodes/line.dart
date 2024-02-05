@@ -48,6 +48,25 @@ base class Line extends QuillContainer<Leaf?> {
         : parent!.next as Line?;
   }
 
+  /// Returns next [Line] or `null` if this is the last line in the document.
+  Line? get prevLine {
+    if (!isFirst) {
+      return previous is Block
+          ? (previous as Block).last as Line?
+          : previous as Line?;
+    }
+    if (parent is! Block) {
+      return null;
+    }
+
+    if (parent!.isFirst) {
+      return null;
+    }
+    return parent!.previous is Block
+        ? (parent!.previous as Block).last as Line?
+        : parent!.previous as Line?;
+  }
+
   @override
   Node newInstance() => Line();
 
