@@ -2,6 +2,24 @@
 
 All notable changes to this project will be documented in this file.
 
+## 9.3.3
+* Update `quill_html_converter` versions
+
+## 9.3.2
+* Fix dispose of text painter [#1774](https://github.com/singerdmx/flutter-quill/pull/1774)
+
+## 9.3.1
+* Require Flutter 3.19.0 as minimum version
+
+## 9.3.0
+* **Breaking change**: `Document.fromHtml(html)` is now returns `Document` instead of `Delta`, use `DeltaX.fromHtml` to return `Delta`
+* Update old deprecated api from Flutter 3.19
+* Scribble scroll fix by @mtallenca in https://github.com/singerdmx/flutter-quill/pull/1745
+
+## 9.2.14
+* feat: move cursor after inserting video/image
+* Apple pencil
+
 ## 9.2.13
 * Fix crash with inserting text from contextMenuButtonItems
 * Fix incorrect behaviour of context menu 

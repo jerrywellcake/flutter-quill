@@ -381,7 +381,7 @@ base class Line extends QuillContainer<Leaf?> {
     void handle(Style style) {
       for (final attr in result.values) {
         if (!style.containsKey(attr.key) ||
-            (style.attributes[attr.key] != attr.value)) {
+            (style.attributes[attr.key]?.value != attr.value)) {
           excluded.add(attr);
         }
       }
@@ -409,6 +409,7 @@ base class Line extends QuillContainer<Leaf?> {
     final remaining = len - local;
     if (remaining > 0 && nextLine != null) {
       final rest = nextLine!.collectStyle(0, remaining);
+      result = result.mergeAll(rest);
       handle(rest);
     }
 
