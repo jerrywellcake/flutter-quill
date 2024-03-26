@@ -1154,11 +1154,9 @@ class QuillRawEditorState extends EditorState
     }
 
     if (attrs.containsKey(Attribute.blockQuote.key)) {
-      assert(false, 'should handle it with [handle]');
-      return defaultStyles!.quote!.verticalSpacing;
+      return handle(defaultStyles!.quote!.verticalSpacing);
     } else if (attrs.containsKey(Attribute.codeBlock.key)) {
-      assert(false, 'should handle it with [handle]');
-      return defaultStyles!.code!.verticalSpacing;
+      return handle(defaultStyles!.code!.verticalSpacing);
     } else if (attrs.containsKey(Attribute.indent.key)) {
       return handle(defaultStyles!.indent!.verticalSpacing);
     } else if (attrs.containsKey(Attribute.list.key)) {
