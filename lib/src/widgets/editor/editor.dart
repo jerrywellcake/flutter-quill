@@ -399,6 +399,7 @@ class _QuillEditorSelectionGestureDetectorBuilder
     }
 
     final platform = Theme.of(_state.context).platform;
+    _state._editorKey.currentState?.showMagnifier(details.globalPosition);
     if (isAppleOS(
       platform: platform,
       supportWeb: true,
@@ -461,6 +462,7 @@ class _QuillEditorSelectionGestureDetectorBuilder
 
   @override
   void onSingleTapUp(TapUpDetails details) {
+    editor!.hideToolbar();
     if (_state.configurations.onTapUp != null &&
         renderEditor != null &&
         _state.configurations.onTapUp!(
@@ -469,8 +471,6 @@ class _QuillEditorSelectionGestureDetectorBuilder
         )) {
       return;
     }
-
-    editor!.hideToolbar();
 
     try {
       if (delegate.selectionEnabled && !_isPositionSelected(details)) {
@@ -548,6 +548,7 @@ class _QuillEditorSelectionGestureDetectorBuilder
           from: details.globalPosition,
           cause: SelectionChangedCause.longPress,
         );
+        _state._editorKey.currentState?.showMagnifier(details.globalPosition);
       } else {
         renderEditor!.selectWord(SelectionChangedCause.longPress);
         Feedback.forLongPress(_state.context);
@@ -557,6 +558,7 @@ class _QuillEditorSelectionGestureDetectorBuilder
 
   @override
   void onSingleLongTapEnd(LongPressEndDetails details) {
+    _state._editorKey.currentState?.hideMagnifier();
     if (_state.configurations.onSingleLongTapEnd != null) {
       if (renderEditor != null) {
         if (_state.configurations.onSingleLongTapEnd!(

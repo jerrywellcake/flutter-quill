@@ -75,6 +75,7 @@ class EditorTextSelectionOverlay {
     this.onSelectionHandleTapped,
     this.dragStartBehavior = DragStartBehavior.start,
     this.handlesVisible = false,
+    this.magnifierConfiguration = TextMagnifierConfiguration.disabled,
   }) {
     // Clipboard status is only checked on first instance of
     // ClipboardStatusNotifier
@@ -211,9 +212,12 @@ class EditorTextSelectionOverlay {
   /// Hides the toolbar part of the overlay.
   ///
   /// To hide the whole overlay, see [hide].
-  void hideToolbar() {
-    assert(toolbar != null);
-    toolbar!.remove();
+  ///
+  /// [tryHide] is introduced by supporting magnifier
+  /// We always try to hide it in some cases.
+  void hideToolbar({bool tryHide = false}) {
+    assert(tryHide || toolbar != null);
+    toolbar?.remove();
     toolbar = null;
   }
 
@@ -253,6 +257,7 @@ class EditorTextSelectionOverlay {
     return Visibility(
         visible: handlesVisible,
         child: _TextSelectionHandleOverlay(
+          selectionOverlay: this,
           onSelectionHandleChanged: (newSelection) {
             _handleSelectionHandleChanged(newSelection, position);
           },
@@ -265,6 +270,118 @@ class EditorTextSelectionOverlay {
           position: position,
           dragStartBehavior: dragStartBehavior,
         ));
+  }
+
+  final ValueNotifier<MagnifierInfo> _magnifierInfo =
+      ValueNotifier<MagnifierInfo>(MagnifierInfo.empty);
+
+  /// [MagnifierController.show] and [MagnifierController.hide] should not be called directly, except
+  /// from inside [showMagnifier] and [hideMagnifier]. If it is desired to show or hide the magnifier,
+  /// call [showMagnifier] or [hideMagnifier]. This is because the magnifier needs to orchestrate
+  /// with other properties in [SelectionOverlay].
+  final MagnifierController _magnifierController = MagnifierController();
+
+  /// {@macro flutter.widgets.magnifier.TextMagnifierConfiguration.intro}
+  ///
+  /// {@macro flutter.widgets.magnifier.intro}
+  ///
+  /// By default, [SelectionOverlay]'s [TextMagnifierConfiguration] is disabled.
+  ///
+  /// {@macro flutter.widgets.magnifier.TextMagnifierConfiguration.details}
+  final TextMagnifierConfiguration magnifierConfiguration;
+
+  /// {@template flutter.widgets.SelectionOverlay.toolbarIsVisible}
+  /// Whether the toolbar is currently visible.
+  ///
+  /// Includes both the text selection toolbar and the spell check menu.
+  /// {@endtemplate}
+  bool get toolbarIsVisible {
+    return toolbar != null;
+  }
+
+  bool get magnifierIsVisible {
+    return _magnifierController.overlayEntry != null;
+  }
+
+  /// {@template flutter.widgets.SelectionOverlay.showMagnifier}
+  /// Shows the magnifier, and hides the toolbar if it was showing when [showMagnifier]
+  /// was called. This is safe to call on platforms not mobile, since
+  /// a magnifierBuilder will not be provided, or the magnifierBuilder will return null
+  /// on platforms not mobile.
+  ///
+  /// This is NOT the source of truth for if the magnifier is up or not,
+  /// since magnifiers may hide themselves. If this info is needed, check
+  /// [MagnifierController.shown].
+  /// {@endtemplate}
+  void showMagnifier(Offset globalPosition) {
+    if (toolbarIsVisible) {
+      hideToolbar();
+    }
+
+    // Start from empty, so we don't utilize any remnant values.
+    _magnifierInfo.value = _buildMagnifier(
+      renderEditable: renderObject,
+      globalGesturePosition: globalPosition,
+      currentTextPosition: renderObject.getPositionForOffset(globalPosition),
+    );
+
+    // Pre-build the magnifiers so we can tell if we've built something
+    // or not. If we don't build a magnifiers, then we should not
+    // insert anything in the overlay.
+    final builtMagnifier = magnifierConfiguration.magnifierBuilder(
+      context,
+      _magnifierController,
+      _magnifierInfo,
+    );
+
+    if (builtMagnifier == null) {
+      return;
+    }
+
+    _magnifierController.show(
+        context: context,
+        below: magnifierConfiguration.shouldDisplayHandlesInMagnifier
+            ? null
+            : _handles?.first,
+        builder: (_) => builtMagnifier);
+  }
+
+  /// {@template flutter.widgets.SelectionOverlay.updateMagnifier}
+  /// Update the current magnifier with new selection data, so the magnifier
+  /// can respond accordingly.
+  ///
+  /// If the magnifier is not shown, this still updates the magnifier position
+  /// because the magnifier may have hidden itself and is looking for a cue to reshow
+  /// itself.
+  ///
+  /// If there is no magnifier in the overlay, this does nothing.
+  /// {@endtemplate}
+  void updateMagnifier(Offset globalPosition) {
+    if (_magnifierController.overlayEntry == null) {
+      return;
+    }
+
+    _magnifierInfo.value = _buildMagnifier(
+      renderEditable: renderObject,
+      globalGesturePosition: globalPosition,
+      currentTextPosition: renderObject.getPositionForOffset(globalPosition),
+    );
+  }
+
+  /// {@template flutter.widgets.SelectionOverlay.hideMagnifier}
+  /// Hide the current magnifier.
+  ///
+  /// This does nothing if there is no magnifier.
+  /// {@endtemplate}
+  void hideMagnifier() {
+    // This cannot be a check on `MagnifierController.shown`, since
+    // it's possible that the magnifier is still in the overlay, but
+    // not shown in cases where the magnifier hides itself.
+    if (_magnifierController.overlayEntry == null) {
+      return;
+    }
+
+    _magnifierController.hide();
   }
 
   /// Updates the overlay after the selection has changed.
@@ -351,6 +468,7 @@ class EditorTextSelectionOverlay {
 
   /// Final cleanup.
   void dispose() {
+    hideMagnifier();
     hide();
   }
 
@@ -377,6 +495,41 @@ class EditorTextSelectionOverlay {
   void updateForScroll() {
     markNeedsBuild();
   }
+
+  MagnifierInfo _buildMagnifier({
+    required RenderEditor renderEditable,
+    required Offset globalGesturePosition,
+    required TextPosition currentTextPosition,
+  }) {
+    final Offset globalRenderEditableTopLeft =
+        renderEditable.localToGlobal(Offset.zero);
+    final Rect localCaretRect =
+        renderEditable.getLocalRectForCaret(currentTextPosition);
+
+    final TextSelection lineAtOffset =
+        renderEditable.getLineAtOffset(currentTextPosition);
+    final TextPosition positionAtEndOfLine = TextPosition(
+      offset: lineAtOffset.extentOffset,
+      affinity: TextAffinity.upstream,
+    );
+
+    // Default affinity is downstream.
+    final TextPosition positionAtBeginningOfLine = TextPosition(
+      offset: lineAtOffset.baseOffset,
+    );
+
+    final Rect lineBoundaries = Rect.fromPoints(
+      renderEditable.getLocalRectForCaret(positionAtBeginningOfLine).topCenter,
+      renderEditable.getLocalRectForCaret(positionAtEndOfLine).bottomCenter,
+    );
+
+    return MagnifierInfo(
+      fieldBounds: globalRenderEditableTopLeft & renderEditable.size,
+      globalGesturePosition: globalGesturePosition,
+      caretRect: localCaretRect.shift(globalRenderEditableTopLeft),
+      currentLineBoundaries: lineBoundaries.shift(globalRenderEditableTopLeft),
+    );
+  }
 }
 
 /// This widget represents a single draggable text selection handle.
@@ -390,6 +543,7 @@ class _TextSelectionHandleOverlay extends StatefulWidget {
     required this.onSelectionHandleChanged,
     required this.onSelectionHandleTapped,
     required this.selectionControls,
+    required this.selectionOverlay,
     this.dragStartBehavior = DragStartBehavior.start,
   });
 
@@ -402,6 +556,7 @@ class _TextSelectionHandleOverlay extends StatefulWidget {
   final VoidCallback? onSelectionHandleTapped;
   final TextSelectionControls selectionControls;
   final DragStartBehavior dragStartBehavior;
+  final EditorTextSelectionOverlay selectionOverlay;
 
   @override
   _TextSelectionHandleOverlayState createState() =>
@@ -470,6 +625,7 @@ class _TextSelectionHandleOverlayState
     final lineHeight = widget.renderObject.preferredLineHeight(textPosition);
     final handleSize = widget.selectionControls.getHandleSize(lineHeight);
     _dragPosition = details.globalPosition + Offset(0, -handleSize.height);
+    widget.selectionOverlay.showMagnifier(details.globalPosition);
   }
 
   void _handleDragUpdate(DragUpdateDetails details) {
@@ -509,7 +665,13 @@ class _TextSelectionHandleOverlayState
       return; // don't allow order swapping.
     }
 
+    widget.selectionOverlay.updateMagnifier(details.globalPosition);
     widget.onSelectionHandleChanged(newSelection);
+  }
+
+  void _handleDragEnd(DragEndDetails details) {
+    widget.selectionOverlay.hideMagnifier();
+    widget.selectionOverlay.showToolbar();
   }
 
   void _handleTap() {
@@ -590,6 +752,7 @@ class _TextSelectionHandleOverlayState
             dragStartBehavior: widget.dragStartBehavior,
             onPanStart: _handleDragStart,
             onPanUpdate: _handleDragUpdate,
+            onPanEnd: _handleDragEnd,
             onTap: _handleTap,
             child: Padding(
               padding: EdgeInsets.only(

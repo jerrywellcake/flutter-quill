@@ -2,6 +2,7 @@ import 'package:flutter/widgets.dart'
     show
         AnimationController,
         BuildContext,
+        Offset,
         ScrollController,
         State,
         StatefulWidget,
@@ -82,6 +83,10 @@ abstract class EditorState extends State<QuillRawEditor>
   bool get dirty;
 
   bool showToolbar();
+
+  bool showMagnifier(Offset globalPosotion);
+
+  void hideMagnifier();
 
   void requestKeyboard();
 

@@ -1425,13 +1425,19 @@ class QuillRawEditorState extends EditorState
 
   void _updateOrDisposeSelectionOverlayIfNeeded() {
     if (_selectionOverlay != null) {
-      if (!_hasFocus || textEditingValue.selection.isCollapsed) {
+      if (!_hasFocus) {
         _selectionOverlay!.dispose();
         _selectionOverlay = null;
+        // comment by jerry
+        // according to original design, isCollapsed mode will destroy
+        // the whole selection overlay.
+        //
+      } else if (textEditingValue.selection.isCollapsed) {
+        _selectionOverlay!.hideToolbar(tryHide: true);
       } else {
         _selectionOverlay!.update(textEditingValue);
       }
-    } else if (_hasFocus) {
+    } else if (_hasFocus && _selectionOverlay == null) {
       _selectionOverlay = EditorTextSelectionOverlay(
         value: textEditingValue,
         context: context,
@@ -1446,6 +1452,7 @@ class QuillRawEditorState extends EditorState
             ? null
             : (context) =>
                 widget.configurations.contextMenuBuilder!(context, this),
+        magnifierConfiguration: TextMagnifier.adaptiveMagnifierConfiguration,
       );
       _selectionOverlay!.handlesVisible = _shouldShowSelectionHandles();
       _selectionOverlay!.showHandles();
@@ -1623,6 +1630,39 @@ class QuillRawEditorState extends EditorState
     _selectionOverlay!.update(textEditingValue);
     _selectionOverlay!.showToolbar();
     return true;
+  }
+
+  @override
+  bool showMagnifier(Offset globalPosotion) {
+    // Web is using native dom elements to enable clipboard functionality of the
+    // toolbar: copy, paste, select, cut. It might also provide additional
+    // functionality depending on the browser (such as translate). Due to this
+    // we should not show a Flutter toolbar for the editable text elements.
+    if (isWeb()) {
+      return false;
+    }
+
+    // selectionOverlay is aggressively released when selection is collapsed
+    // to remove unnecessary handles. Since a toolbar is requested here,
+    // attempt to create the selectionOverlay if it's not already created.
+    if (_selectionOverlay == null) {
+      _updateOrDisposeSelectionOverlayIfNeeded();
+    }
+    if (_selectionOverlay == null || _selectionOverlay!.toolbar != null) {
+      return false;
+    }
+
+    if (_selectionOverlay!.magnifierIsVisible) {
+      _selectionOverlay!.updateMagnifier(globalPosotion);
+    } else {
+      _selectionOverlay!.showMagnifier(globalPosotion);
+    }
+    return true;
+  }
+
+  @override
+  void hideMagnifier() {
+    _selectionOverlay?.hideMagnifier();
   }
 
   void _replaceText(ReplaceTextIntent intent) {
