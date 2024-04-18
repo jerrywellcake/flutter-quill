@@ -56,6 +56,7 @@ class Rules {
     ResolveLineFormatRule(),
     ResolveInlineFormatRule(),
     ResolveImageFormatRule(),
+    ResolveRBImageFormatRule(),
     InsertEmbedsRule(),
     AutoExitBlockRule(),
     PreserveBlockStyleOnInsertRule(),

@@ -224,3 +224,31 @@ class ResolveImageFormatRule extends FormatRule {
     return delta;
   }
 }
+
+/// Produces Delta with attributes applied to image leaf node
+@immutable
+class ResolveRBImageFormatRule extends FormatRule {
+  const ResolveRBImageFormatRule();
+
+  @override
+  Delta? applyRule(
+    Delta document,
+    int index, {
+    int? len,
+    Object? data,
+    Attribute? attribute,
+  }) {
+    if (attribute == null ||
+        !(attribute.key == 'border-radius' || attribute.key == 'link')) {
+      return null;
+    }
+
+    assert(len == 1 && data == null);
+
+    final delta = Delta()
+      ..retain(index)
+      ..retain(1, attribute.toJson());
+
+    return delta;
+  }
+}
