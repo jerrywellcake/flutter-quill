@@ -25,6 +25,7 @@ import 'package:flutter/widgets.dart'
         Widget;
 import 'package:meta/meta.dart' show immutable;
 
+import '../../../../flutter_quill.dart';
 import '../../../widgets/others/cursor.dart';
 import '../../../widgets/others/default_styles.dart';
 import '../../../widgets/others/delegate.dart';
@@ -81,6 +82,8 @@ class QuillRawEditorConfigurations extends Equatable {
     this.enableScribble = false,
     this.onScribbleActivated,
     this.scribbleAreaInsets,
+    this.blockLeadingBuilder,
+    this.blockIndentWidthBuilder,
   });
 
   /// Controls the document being edited.
@@ -314,6 +317,14 @@ class QuillRawEditorConfigurations extends Equatable {
 
   /// Optional insets for the scribble area.
   final EdgeInsets? scribbleAreaInsets;
+
+  /// Optional builder for append leading widget for block
+  final Widget? Function(Map<String, Attribute> attributes)?
+      blockLeadingBuilder;
+
+  /// Optional builder for append indent width for block
+  final double? Function(Map<String, Attribute> attributes, int? indent)?
+      blockIndentWidthBuilder;
 
   @override
   List<Object?> get props => [

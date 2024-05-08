@@ -249,6 +249,12 @@ class EditableTextBlock extends StatelessWidget {
     //     ? getTextAlign(line.style.attributes[Attribute.align.key]?.value)
     //     : null;
 
+    final blockStyle = QuillBlockStyles.getBlockStyles(context);
+    final customLeading = blockStyle?.leadingBuilder?.call(attrs);
+    if (customLeading != null) {
+      return customLeading;
+    }
+
     if (attrs[Attribute.list.key] == Attribute.ol) {
       return QuillEditorNumberPoint(
         index: index,
@@ -320,6 +326,12 @@ class EditableTextBlock extends StatelessWidget {
     var extraIndent = 0.0;
     if (indent != null && indent.value != null) {
       extraIndent = fontSize * indent.value;
+    }
+
+    final blockStyle = QuillBlockStyles.getBlockStyles(context);
+    final width = blockStyle?.indentWidthBuilder?.call(attrs, indent?.value);
+    if (width != null) {
+      return width;
     }
 
     if (attrs.containsKey(Attribute.blockQuote.key)) {

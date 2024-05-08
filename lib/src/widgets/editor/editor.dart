@@ -288,6 +288,8 @@ class QuillEditorState extends State<QuillEditor>
               enableScribble: configurations.enableScribble,
               onScribbleActivated: configurations.onScribbleActivated,
               scribbleAreaInsets: configurations.scribbleAreaInsets,
+              blockLeadingBuilder: configurations.blockLeadingBuilder,
+              blockIndentWidthBuilder: configurations.blockIndentWidthBuilder,
             ),
           ),
         ),

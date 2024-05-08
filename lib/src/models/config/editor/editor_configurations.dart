@@ -6,6 +6,7 @@ import 'package:flutter/material.dart'
 import 'package:flutter/widgets.dart';
 import 'package:meta/meta.dart' show experimental;
 
+import '../../../../flutter_quill.dart';
 import '../../../widgets/editor/editor_builder.dart';
 import '../../../widgets/others/default_styles.dart';
 import '../../../widgets/others/delegate.dart';
@@ -79,6 +80,8 @@ class QuillEditorConfigurations extends Equatable {
     this.enableScribble = false,
     this.onScribbleActivated,
     this.scribbleAreaInsets,
+    this.blockLeadingBuilder,
+    this.blockIndentWidthBuilder,
   });
 
   final QuillSharedConfigurations sharedConfigurations;
@@ -347,6 +350,14 @@ class QuillEditorConfigurations extends Equatable {
 
   /// Optional insets for the scribble area.
   final EdgeInsets? scribbleAreaInsets;
+
+  /// Optional builder for append leading widget for block
+  final Widget? Function(Map<String, Attribute> attributes)?
+      blockLeadingBuilder;
+
+  /// Optional builder for append indent width for block
+  final double? Function(Map<String, Attribute> attributes, int? indent)?
+      blockIndentWidthBuilder;
 
   @override
   List<Object?> get props => [

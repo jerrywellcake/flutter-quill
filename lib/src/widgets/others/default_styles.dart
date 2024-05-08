@@ -30,6 +30,29 @@ class QuillStyles extends InheritedWidget {
   }
 }
 
+class QuillBlockStyles extends InheritedWidget {
+  const QuillBlockStyles({
+    required super.child,
+    required this.leadingBuilder,
+    required this.indentWidthBuilder,
+    super.key,
+  });
+
+  final Widget? Function(Map<String, Attribute> attributes)? leadingBuilder;
+  final double? Function(Map<String, Attribute> attributes, int? indent)?
+      indentWidthBuilder;
+
+  @override
+  bool updateShouldNotify(covariant QuillBlockStyles oldWidget) {
+    return leadingBuilder != oldWidget.leadingBuilder ||
+        indentWidthBuilder != oldWidget.indentWidthBuilder;
+  }
+
+  static QuillBlockStyles? getBlockStyles(BuildContext context) {
+    return context.dependOnInheritedWidgetOfExactType<QuillBlockStyles>();
+  }
+}
+
 /// Style theme applied to a block of rich text, including single-line
 /// paragraphs.
 @immutable
