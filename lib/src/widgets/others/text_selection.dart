@@ -212,18 +212,19 @@ class EditorTextSelectionOverlay {
   /// Hides the toolbar part of the overlay.
   ///
   /// To hide the whole overlay, see [hide].
-  ///
-  /// [tryHide] is introduced by supporting magnifier
-  /// We always try to hide it in some cases.
-  void hideToolbar({bool tryHide = false}) {
-    assert(tryHide || toolbar != null);
-    toolbar?.remove();
-    toolbar = null;
+  void hideToolbar() {
+    if (toolbar != null) {
+      toolbar?.remove();
+      toolbar = null;
+    }
   }
 
   /// Shows the toolbar by inserting it into the [context]'s overlay.
   void showToolbar() {
-    assert(toolbar == null);
+    if (toolbar != null) {
+      hideToolbar();
+    }
+
     if (contextMenuBuilder == null) return;
     toolbar = OverlayEntry(builder: (context) {
       // to prevent from throws selection layout exception while hot reload
@@ -456,11 +457,7 @@ class EditorTextSelectionOverlay {
 
   /// Hides the entire overlay including the toolbar and the handles.
   void hide() {
-    if (_handles != null) {
-      _handles![0].remove();
-      _handles![1].remove();
-      _handles = null;
-    }
+    hideHandles();
     if (toolbar != null) {
       hideToolbar();
     }

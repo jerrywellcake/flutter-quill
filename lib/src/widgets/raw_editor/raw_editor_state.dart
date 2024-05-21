@@ -1442,7 +1442,7 @@ class QuillRawEditorState extends EditorState
         // the whole selection overlay.
         //
       } else if (textEditingValue.selection.isCollapsed) {
-        _selectionOverlay!.hideToolbar(tryHide: true);
+        _selectionOverlay!.hideToolbar();
       } else {
         _selectionOverlay!.update(textEditingValue);
       }
