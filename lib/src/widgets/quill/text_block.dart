@@ -176,7 +176,7 @@ class EditableTextBlock extends StatelessWidget {
             index,
             count,
             DefaultStylesBuilderWidget.of(context)
-                    ?.stylesBuilder(prev, line, style0) ??
+                    ?.lineStylesBuilder(prev, line, style0) ??
                 style0),
         textDirection,
         textSelection,

@@ -1104,7 +1104,7 @@ class QuillRawEditorState extends EditorState
         _getVerticalSpacingForLine(
             node,
             DefaultStylesBuilderWidget.of(context)
-                    ?.stylesBuilder(prev, node, _styles!) ??
+                    ?.lineStylesBuilder(prev, node, _styles!) ??
                 _styles!),
         _textDirection,
         controller.selection,
@@ -1155,9 +1155,7 @@ class QuillRawEditorState extends EditorState
 
     VerticalSpacing handle(VerticalSpacing defaultFallback) {
       return DefaultStylesBuilderWidget.of(context)
-              ?.stylesBuilder(prev, node, defaultStyles!)
-              .align
-              ?.verticalSpacing ??
+              ?.blockStylesBuilder(prev, node, defaultStyles!) ??
           defaultFallback;
     }
 
@@ -1896,20 +1894,25 @@ class QuillRawEditorState extends EditorState
 
 typedef DefaultStylesBuilder = DefaultStyles Function(
     Node? prev, Node current, DefaultStyles style);
+typedef BlockMarginBuilder = VerticalSpacing Function(
+    Node? prev, Block current, DefaultStyles? style);
 
 class DefaultStylesBuilderWidget extends InheritedWidget {
   const DefaultStylesBuilderWidget({
     super.key,
-    required this.stylesBuilder,
+    required this.lineStylesBuilder,
+    required this.blockStylesBuilder,
     required super.child,
   });
 
-  final DefaultStylesBuilder stylesBuilder;
+  final DefaultStylesBuilder lineStylesBuilder;
+  final BlockMarginBuilder blockStylesBuilder;
 
   @override
   bool updateShouldNotify(covariant InheritedWidget oldWidget) {
     if (oldWidget is DefaultStylesBuilderWidget) {
-      return stylesBuilder == oldWidget.stylesBuilder;
+      return lineStylesBuilder != oldWidget.lineStylesBuilder ||
+          blockStylesBuilder != oldWidget.blockStylesBuilder;
     }
 
     return false;
