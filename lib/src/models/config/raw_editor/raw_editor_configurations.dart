@@ -1,5 +1,6 @@
 import 'package:equatable/equatable.dart';
-import 'package:flutter/foundation.dart' show Brightness, Uint8List;
+import 'package:flutter/foundation.dart'
+    show Brightness, Uint8List, ValueNotifier;
 import 'package:flutter/material.dart'
     show
         AdaptiveTextSelectionToolbar,
@@ -84,6 +85,7 @@ class QuillRawEditorConfigurations extends Equatable {
     this.scribbleAreaInsets,
     this.blockLeadingBuilder,
     this.blockIndentWidthBuilder,
+    required this.shouldBringCursorIntoViewportController,
   });
 
   /// Controls the document being edited.
@@ -162,6 +164,9 @@ class QuillRawEditorConfigurations extends Equatable {
   ///  * [showSelectionHandles], which controls the visibility of the selection
   ///    handles.
   final bool showCursor;
+
+  /// Whether to react the scroll cursor into viewport when gain focus.
+  final ValueNotifier<bool>? shouldBringCursorIntoViewportController;
 
   /// The style to be used for the editing cursor.
   final CursorStyle cursorStyle;

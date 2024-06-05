@@ -290,6 +290,8 @@ class QuillEditorState extends State<QuillEditor>
               scribbleAreaInsets: configurations.scribbleAreaInsets,
               blockLeadingBuilder: configurations.blockLeadingBuilder,
               blockIndentWidthBuilder: configurations.blockIndentWidthBuilder,
+              shouldBringCursorIntoViewportController:
+                  configurations.shouldBringCursorIntoViewportController,
             ),
           ),
         ),

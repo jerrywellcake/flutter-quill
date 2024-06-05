@@ -1526,7 +1526,11 @@ class QuillRawEditorState extends EditorState
 
   void _showCaretOnScreen(
       {Duration duration = const Duration(milliseconds: 100)}) {
-    if (!widget.configurations.showCursor || _showCaretOnScreenScheduled) {
+    if (!widget.configurations.showCursor ||
+        !(widget.configurations.shouldBringCursorIntoViewportController
+                ?.value ??
+            true) ||
+        _showCaretOnScreenScheduled) {
       return;
     }
 

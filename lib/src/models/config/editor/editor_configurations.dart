@@ -82,6 +82,7 @@ class QuillEditorConfigurations extends Equatable {
     this.scribbleAreaInsets,
     this.blockLeadingBuilder,
     this.blockIndentWidthBuilder,
+    this.shouldBringCursorIntoViewportController,
   });
 
   final QuillSharedConfigurations sharedConfigurations;
@@ -149,6 +150,9 @@ class QuillEditorConfigurations extends Equatable {
   /// The cursor refers to the blinking caret when the editor is focused.
   final bool? showCursor;
   final bool? paintCursorAboveText;
+
+  /// Whether to react the scroll cursor into viewport when gain focus.
+  final ValueNotifier<bool>? shouldBringCursorIntoViewportController;
 
   /// Whether to enable user interface affordances for changing the
   /// text selection.
