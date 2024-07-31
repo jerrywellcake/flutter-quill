@@ -196,7 +196,10 @@ class _TextLineState extends State<TextLine> {
     // The line could contain more than one Embed & more than one Text
     final textSpanChildren = <InlineSpan>[];
     var textNodes = LinkedList<Node>();
+    final length = widget.line.children.length;
+    var index = -1;
     for (var child in widget.line.children) {
+      index++;
       if (child is Embed) {
         if (textNodes.isNotEmpty) {
           textSpanChildren.add(
@@ -209,16 +212,39 @@ class _TextLineState extends State<TextLine> {
             ..applyStyle(child.style);
         }
         final embedBuilder = widget.embedBuilder(child);
-        final embedWidget = EmbedProxy(
-          embedBuilder.build(
-            context,
-            widget.controller,
-            child,
-            widget.readOnly,
-            true,
-            lineStyle,
-          ),
+        var embedWidget = embedBuilder.build(
+          context,
+          widget.controller,
+          child,
+          widget.readOnly,
+          true,
+          lineStyle,
         );
+
+        // #9858
+        // Used to represent the margin of the block layout
+        // e.g. image's block layout may affect its sibling
+        //
+        // We append the mock margin if
+        // either the previous or next element is empty,
+        // as the responsibility will then fall to the first object
+        // in the other lines.
+        final embedMarginTop =
+            index > 0 ? embedBuilder.getBlockMarginTop(child) : 0.0;
+        final embedMarginBottom =
+            index < length - 1 ? embedBuilder.getBlockMarginBottom(child) : 0.0;
+        if (embedMarginBottom != 0 || embedMarginTop != 0) {
+          embedWidget = Padding(
+            padding: EdgeInsets.only(
+              top: embedMarginTop,
+              bottom: embedMarginBottom,
+            ),
+            child: embedWidget,
+          );
+        }
+
+        embedWidget = EmbedProxy(embedWidget);
+
         final embed = embedBuilder.buildWidgetSpan(embedWidget);
         textSpanChildren.add(embed);
         continue;

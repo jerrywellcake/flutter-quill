@@ -11,6 +11,8 @@ abstract class EmbedBuilder {
 
   String get key;
   bool get expanded => true;
+  double getBlockMarginTop(Embed node) => 0;
+  double getBlockMarginBottom(Embed node) => 0;
 
   WidgetSpan buildWidgetSpan(Widget widget) {
     return WidgetSpan(child: widget);
