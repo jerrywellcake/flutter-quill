@@ -151,6 +151,7 @@ class EditableTextBlock extends StatelessWidget {
       final editableTextLine = EditableTextLine(
         line,
         _buildLeading(
+          prev: prev,
           context: context,
           line: line,
           index: index,
@@ -213,6 +214,7 @@ class EditableTextBlock extends StatelessWidget {
   }
 
   Widget? _buildLeading({
+    required Node? prev,
     required BuildContext context,
     required Line line,
     required int index,
@@ -250,7 +252,7 @@ class EditableTextBlock extends StatelessWidget {
     //     : null;
 
     final blockStyle = QuillBlockStyles.getBlockStyles(context);
-    final customLeading = blockStyle?.leadingBuilder?.call(attrs);
+    final customLeading = blockStyle?.leadingBuilder?.call(prev, attrs);
     if (customLeading != null) {
       return customLeading;
     }

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../models/documents/attribute.dart';
+import '../../models/documents/nodes/node.dart';
 import '../../models/documents/style.dart';
 import '../../models/structs/vertical_spacing.dart';
 import '../../utils/platform.dart';
@@ -38,7 +39,8 @@ class QuillBlockStyles extends InheritedWidget {
     super.key,
   });
 
-  final Widget? Function(Map<String, Attribute> attributes)? leadingBuilder;
+  final Widget? Function(Node? prev, Map<String, Attribute> attributes)?
+      leadingBuilder;
   final double? Function(Map<String, Attribute> attributes, int? indent)?
       indentWidthBuilder;
 

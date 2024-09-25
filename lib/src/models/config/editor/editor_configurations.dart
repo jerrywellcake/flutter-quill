@@ -356,7 +356,7 @@ class QuillEditorConfigurations extends Equatable {
   final EdgeInsets? scribbleAreaInsets;
 
   /// Optional builder for append leading widget for block
-  final Widget? Function(Map<String, Attribute> attributes)?
+  final Widget? Function(Node? prev, Map<String, Attribute> attributes)?
       blockLeadingBuilder;
 
   /// Optional builder for append indent width for block

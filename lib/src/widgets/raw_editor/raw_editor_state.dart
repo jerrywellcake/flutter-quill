@@ -90,7 +90,8 @@ class QuillRawEditorState extends EditorState
   // Theme
   DefaultStyles? _styles;
 
-  Widget? Function(Map<String, Attribute> attributes)? _blockLeadingBuilder;
+  Widget? Function(Node? prev, Map<String, Attribute> attributes)?
+      _blockLeadingBuilder;
   double? Function(Map<String, Attribute> attributes, int? indent)?
       _blockIndentWidthBuilder;
 
